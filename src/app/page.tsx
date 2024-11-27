@@ -18,8 +18,10 @@ export default function Summarizer() {
   const [animatedText, setAnimatedText] = useState('')
   const [isDarkMode, setIsDarkMode] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfFileName, setPdfFileName] = useState<string>('');
 
-  const { summary, error, loading ,text, setSummary, setError, setLoading, setText, generateSummary } = useSummary();
+  const { summary, error, loading ,text, setSummary, setError, setLoading, setText, generateTextSummary, generatePdfSummary } = useSummary();
 
   useEffect(() => {
     const text = "AI Content Summarizer"
@@ -29,6 +31,7 @@ export default function Summarizer() {
         setAnimatedText((prev) => prev + text.charAt(i))
         i++
       } else {
+
         clearInterval(intervalId)
       }
     }, 100)
@@ -36,15 +39,74 @@ export default function Summarizer() {
     return () => clearInterval(intervalId)
   }, [])
 
+  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file);
+      setPdfFileName(file.name);
+    } else {
+      alert('Please upload a PDF file');
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    
+    if (!file) {
+      console.error('No file selected');
+      return;
+    }
+
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      alert('Please upload a PDF file');
+      setPdfFile(null);
+      setPdfFileName('');
+      return;
+    }
+
+    // Validate file size (e.g., 10MB limit)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > MAX_FILE_SIZE) {
+      alert('File is too large. Please upload a file smaller than 10MB');
+      setPdfFile(null);
+      setPdfFileName('');
+      return;
+    }
+
+    console.log('Selected file:', file);
+    console.log('File type:', file.type);
+    console.log('File size:', file.size);
+
+    setPdfFile(file);
+    setPdfFileName(file.name);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulating API call
-
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    await generateSummary(text, 'text', 'en');
-    // setSummary("This is a sample summary of the content you provided. In a real application, this would be the result returned from your AI summarization service.")
-    setIsLoading(false)
+    
+    try {
+      if (activeTab === 'text') {
+        await generateTextSummary(text, 'en');
+      } else if (activeTab === 'pdf' && pdfFile) {
+        console.log('Submitting PDF file:', pdfFile);
+        const response = await generatePdfSummary(pdfFile, 'en');
+        console.log('PDF Summary response:', response);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const toggleTheme = () => {
@@ -109,7 +171,7 @@ export default function Summarizer() {
               </CardDescription>
             </CardHeader>
             <CardContent className="mt-6">
-              <form onSubmit={handleSubmit}>
+              <form action="/profile" onSubmit={handleSubmit} encType="multipart/form-data" method="post">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className={`grid w-full grid-cols-3 mb-6 ${isDarkMode ? 'bg-gray-700/50' : 'bg-gray-100'}`}>
                     <TabsTrigger value="text" className={`${isDarkMode ? 'data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400' : 'data-[state=active]:bg-white data-[state=active]:text-blue-600'}`}>Text</TabsTrigger>
@@ -125,15 +187,56 @@ export default function Summarizer() {
                     />
                   </TabsContent>
                   <TabsContent value="pdf">
-                    <div className="flex items-center justify-center w-full">
-                      <label htmlFor="dropzone-file" className={`flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed rounded-lg cursor-pointer ${isDarkMode ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50' : 'border-gray-300 bg-gray-50 hover:bg-gray-100'} transition-colors duration-300`}>
+                    <div className="flex flex-col items-center justify-center w-full">
+                      <label
+                        htmlFor="dropzone-file"
+                        className={`flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed rounded-lg cursor-pointer 
+                        ${isDarkMode 
+                          ? 'border-gray-600 bg-gray-700/30 hover:bg-gray-700/50' 
+                          : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
+                        } transition-colors duration-300`}
+                        onDragOver={handleDragOver}
+                        onDrop={handleDrop}
+                      >
                         <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                          <FileUp className={`w-8 h-8 mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
-                          <p className={`mb-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                          <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>PDF (MAX. 10MB)</p>
+                          {pdfFileName ? (
+                            <>
+                              <FileText className={`w-8 h-8 mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                              <p className={`mb-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                Selected file: {pdfFileName}
+                              </p>
+                              <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                Click to change file
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <FileUp className={`w-8 h-8 mb-3 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`} />
+                              <p className={`mb-2 text-sm sm:text-base ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                <span className="font-semibold">Click to upload</span> or drag and drop
+                              </p>
+                              <p className={`text-xs sm:text-sm ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                PDF (MAX. 10MB)
+                              </p>
+                            </>
+                          )}
                         </div>
-                        <input id="dropzone-file" type="file" className="hidden" accept=".pdf" />
+                        <input
+                          id="dropzone-file"
+                          type="file"
+                          name="pdf"
+                          className="hidden"
+                          accept=".pdf"
+                          onChange={handleFileChange}
+                        />
                       </label>
+                      
+                      {/* Optional: Add error message display */}
+                      {error && (
+                        <p className="mt-2 text-sm text-red-500">
+                          {error}
+                        </p>
+                      )}
                     </div>
                   </TabsContent>
                   <TabsContent value="youtube">
@@ -174,7 +277,7 @@ export default function Summarizer() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="mt-4">
-                <p className={`text-sm sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{summary}</p>
+                <div className={`whitespace-pre-wrap text-sm sm:text-base ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>{summary}</div>
               </CardContent>
             </Card>
           )}
@@ -185,7 +288,7 @@ export default function Summarizer() {
       <footer className={`py-6 px-4 ${isDarkMode ? 'bg-gray-800 text-gray-300' : 'bg-gray-200 text-gray-700'}`}>
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="mb-4 md:mb-0">
-            <p>&copy; 2023 AI Summarizer. All rights reserved.</p>
+            <p>&copy; 2024 AI Summarizer. All rights reserved.</p>
           </div>
           <div className="flex space-x-4">
             <Link href="/terms" className="hover:underline">Terms of Service</Link>

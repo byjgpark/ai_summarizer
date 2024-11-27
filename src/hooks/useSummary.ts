@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { createSummary } from '@/services/api';
+import { createTextSummary, createPdfSummary } from '@/services/api';
 
 interface UseSummaryReturn {
   summary: string | null;
@@ -10,21 +10,25 @@ interface UseSummaryReturn {
   setError: (error: string) => void;
   setLoading: (loading: boolean) => void;
   setText: (text: string) => void;
-  generateSummary: (text: string, type?: 'text' | 'url' | 'youtube', language?: string) => Promise<void>;
+  generateTextSummary: (text: string, language?: string) => Promise<void>;
+  generatePdfSummary: (pdf: File, language?: string) => Promise<void>;
+  generateYoutubeSummary: (url: string, language?: string) => Promise<void>;
 }
 
 export const useSummary = (): UseSummaryReturn => {
-  const [summary, setSummary] = useState<string | null>(null);
+  const [summary, setSummary] = useState<string | null>(``);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [text, setText] = useState('')
+  const [text, setText] = useState(``)
 
-  const generateSummary = async (text: string, type: 'text' | 'url' | 'youtube' = 'text', language = 'en') => {
+  const generateTextSummary = async (text: string, language = 'en') => {
     try {
       setLoading(true);
       setError(null);
-      
-      const response = await createSummary({ text, type, language });
+
+      const response = await createTextSummary({ text, language });
+
+      console.log("check response.summarization :", response.summarization)
       
       setSummary(response.summarization);
     } catch (err) {
@@ -34,5 +38,24 @@ export const useSummary = (): UseSummaryReturn => {
     }
   };
 
-  return { summary, error, loading, text, setSummary, setError, setLoading, setText, generateSummary };
+  const generatePdfSummary = async (pdf: File, language = 'en') => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log("check pdf", pdf)
+
+      const response = await createPdfSummary({ pdf, language });
+
+      setSummary(response.summarization);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate summary');
+    } finally {
+      setLoading(false);
+    }   
+  }
+
+
+
+  return { summary, error, loading, text, setSummary, setError, setLoading, setText, generateTextSummary, generatePdfSummary };
 };
