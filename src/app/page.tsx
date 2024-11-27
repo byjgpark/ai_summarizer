@@ -21,7 +21,18 @@ export default function Summarizer() {
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfFileName, setPdfFileName] = useState<string>('');
 
-  const { summary, error, loading ,text, setSummary, setError, setLoading, setText, generateTextSummary, generatePdfSummary } = useSummary();
+  const { 
+    summary, 
+    error, 
+    // loading ,
+    text, 
+    // setSummary, 
+    // setError, 
+    // setLoading, 
+    setText, 
+    generateTextSummary, 
+    generatePdfSummary 
+  } = useSummary();
 
   useEffect(() => {
     const text = "AI Content Summarizer"

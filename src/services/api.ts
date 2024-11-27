@@ -17,7 +17,7 @@ interface SummaryTextRequest {
     try {
         console.log("check data from api :", data)
 
-        const response = await fetch(`${process.env.NEXT_PUBLIC_DEV_URL}/all-ai-summarizer/us-central1/createTextSummary`, {
+        const response = await fetch(`https://createtextsummary-${process.env.NEXT_PUBLIC_DEV_URL}`, {
           method: 'POST',
           headers: {
           'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ interface SummaryTextRequest {
       }
 
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_DEV_URL}/all-ai-summarizer/us-central1/extractPdfText`,
+        `https://createpdfsummary-${process.env.NEXT_PUBLIC_DEV_URL}`,
         {
           method: 'POST',
           body: formData,

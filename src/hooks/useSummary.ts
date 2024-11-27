@@ -12,7 +12,7 @@ interface UseSummaryReturn {
   setText: (text: string) => void;
   generateTextSummary: (text: string, language?: string) => Promise<void>;
   generatePdfSummary: (pdf: File, language?: string) => Promise<void>;
-  generateYoutubeSummary: (url: string, language?: string) => Promise<void>;
+  // generateYoutubeSummary: (url: string, language?: string) => Promise<void>;
 }
 
 export const useSummary = (): UseSummaryReturn => {
@@ -57,5 +57,16 @@ export const useSummary = (): UseSummaryReturn => {
 
 
 
-  return { summary, error, loading, text, setSummary, setError, setLoading, setText, generateTextSummary, generatePdfSummary };
+  return { 
+    summary, 
+    error, 
+    loading, 
+    text, 
+    setSummary, 
+    setError, 
+    setLoading, 
+    setText, 
+    generateTextSummary, 
+    generatePdfSummary 
+  };
 };
