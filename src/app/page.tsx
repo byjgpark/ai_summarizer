@@ -20,18 +20,22 @@ export default function Summarizer() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfFileName, setPdfFileName] = useState<string>('');
+  
 
   const { 
     summary, 
     error, 
     // loading ,
     text, 
+    youtubeUrl,
     // setSummary, 
     // setError, 
     // setLoading, 
     setText, 
+    setYoutubeUrl,
     generateTextSummary, 
-    generatePdfSummary 
+    generatePdfSummary,
+    generateYoutubeSummary
   } = useSummary();
 
   useEffect(() => {
@@ -112,6 +116,8 @@ export default function Summarizer() {
         console.log('Submitting PDF file:', pdfFile);
         const response = await generatePdfSummary(pdfFile, 'en');
         console.log('PDF Summary response:', response);
+      } else if (activeTab === 'youtube' && youtubeUrl) {
+        await generateYoutubeSummary(youtubeUrl, 'en');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -255,6 +261,7 @@ export default function Summarizer() {
                       type="url" 
                       placeholder="Enter YouTube video URL" 
                       className={`${isDarkMode ? 'bg-gray-700/30 border-gray-600 focus:border-blue-400 focus:ring-blue-400/50 placeholder-gray-500' : 'bg-gray-50 border-gray-300 focus:border-blue-500 focus:ring-blue-500/50 placeholder-gray-400'}`}
+                      onChange={(e) => setYoutubeUrl(e.target.value)}
                     />
                   </TabsContent>
                 </Tabs>
