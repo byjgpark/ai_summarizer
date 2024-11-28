@@ -20,8 +20,7 @@ interface SummaryTextRequest {
   
   export const createTextSummary = async (data: SummaryTextRequest): Promise<SummaryResponse> => {
     try {
-        console.log("check data from api :", data)
-
+      
         const response = await fetch(`https://createtextsummary-${process.env.NEXT_PUBLIC_DEV_URL}`, {
           method: 'POST',
           headers: {
