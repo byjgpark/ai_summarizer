@@ -12,6 +12,11 @@ interface SummaryTextRequest {
     summarization: string;
     error?: string;
   }
+
+  interface SummaryYoutubeRequest {
+    url: string;
+    language?: string;
+  }
   
   export const createTextSummary = async (data: SummaryTextRequest): Promise<SummaryResponse> => {
     try {
@@ -78,6 +83,28 @@ interface SummaryTextRequest {
       return result;
     } catch (error) {
       console.error('Error creating PDF summary:', error);
+      throw error;
+    }
+  };
+
+  export const createYoutubeSummary = async (data: SummaryYoutubeRequest): Promise<SummaryResponse> => {
+    try {
+
+        const response = await fetch(`https://createyoutubesummary-${process.env.NEXT_PUBLIC_DEV_URL}`, {
+          method: 'POST',
+          headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({youtubeUrl : data.url}),
+        });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+        const result = await response.json();
+        return result;
+    } catch (error) {
+      console.error('Error creating summary:', error);
       throw error;
     }
   };

@@ -1,18 +1,20 @@
 import { useState } from 'react';
-import { createTextSummary, createPdfSummary } from '@/services/api';
+import { createTextSummary, createPdfSummary, createYoutubeSummary } from '@/services/api';
 
 interface UseSummaryReturn {
   summary: string | null;
   error: string | null;
   loading: boolean;
   text: string;
+  youtubeUrl: string;
   setSummary: (summary: string) => void;
   setError: (error: string) => void;
   setLoading: (loading: boolean) => void;
   setText: (text: string) => void;
+  setYoutubeUrl: (url: string) => void;
   generateTextSummary: (text: string, language?: string) => Promise<void>;
   generatePdfSummary: (pdf: File, language?: string) => Promise<void>;
-  // generateYoutubeSummary: (url: string, language?: string) => Promise<void>;
+  generateYoutubeSummary: (url: string, language?: string) => Promise<void>;
 }
 
 export const useSummary = (): UseSummaryReturn => {
@@ -20,6 +22,7 @@ export const useSummary = (): UseSummaryReturn => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [text, setText] = useState(``)
+  const [youtubeUrl, setYoutubeUrl] = useState<string>('');
 
   const generateTextSummary = async (text: string, language = 'en') => {
     try {
@@ -55,6 +58,23 @@ export const useSummary = (): UseSummaryReturn => {
     }   
   }
 
+  const generateYoutubeSummary = async (url: string, language = 'en') => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      console.log("check url", url)
+
+      const response = await createYoutubeSummary({ url, language });
+
+      setSummary(response.summarization);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to generate summary');
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
 
   return { 
@@ -62,11 +82,14 @@ export const useSummary = (): UseSummaryReturn => {
     error, 
     loading, 
     text, 
+    youtubeUrl,
     setSummary, 
     setError, 
     setLoading, 
     setText, 
+    setYoutubeUrl,
     generateTextSummary, 
-    generatePdfSummary 
+    generatePdfSummary,
+    generateYoutubeSummary
   };
 };
