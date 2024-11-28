@@ -143,9 +143,9 @@ export default function Summarizer() {
             AI Summarizer
           </Link>
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/pricing" className={`${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}>Pricing</Link>
+            {/* <Link href="/pricing" className={`${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}>Pricing</Link>
             <Link href="/about" className={`${isDarkMode ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}>About</Link>
-            <Link href="/login" className={`${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white px-4 py-2 rounded-md transition-colors duration-300`}>Login</Link>
+            <Link href="/login" className={`${isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600'} text-white px-4 py-2 rounded-md transition-colors duration-300`}>Login</Link> */}
             <div className="flex items-center space-x-2">
               <Sun className="h-4 w-4" />
               <Switch id="theme-toggle" checked={isDarkMode} onCheckedChange={toggleTheme} />
