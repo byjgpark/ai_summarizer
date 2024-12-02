@@ -88,8 +88,10 @@ interface SummaryTextRequest {
 
   export const createYoutubeSummary = async (data: SummaryYoutubeRequest): Promise<SummaryResponse> => {
     try {
+      
+        const productionURL = `https://createyoutubesummary-${process.env.NEXT_PUBLIC_DEV_URL}`
 
-        const response = await fetch(`https://createyoutubesummary-${process.env.NEXT_PUBLIC_DEV_URL}`, {
+        const response = await fetch(productionURL, {
           method: 'POST',
           headers: {
           'Content-Type': 'application/json',
