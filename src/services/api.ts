@@ -1,3 +1,5 @@
+import { YoutubeTranscript } from 'youtube-transcript';
+
 interface SummaryTextRequest {
     text: string;
     language?: string;
@@ -19,8 +21,8 @@ interface SummaryTextRequest {
   }
   
   export const createTextSummary = async (data: SummaryTextRequest): Promise<SummaryResponse> => {
+    
     try {
-      
         const response = await fetch(`https://createtextsummary-${process.env.NEXT_PUBLIC_DEV_URL}`, {
           method: 'POST',
           headers: {
@@ -88,25 +90,48 @@ interface SummaryTextRequest {
 
   export const createYoutubeSummary = async (data: SummaryYoutubeRequest): Promise<SummaryResponse> => {
     try {
+      // Extract video ID from URL
+      const videoId = extractYoutubeVideoId(data.url);
+      if (!videoId) {
+        throw new Error('Invalid YouTube URL');
+      }
 
-        
-        const productionURL = `https://createyoutubesummary-${process.env.NEXT_PUBLIC_DEV_URL}`
+      // Get transcript
+      const transcript = await YoutubeTranscript.fetchTranscript(videoId);
+      const fullText = transcript.map((item: { text: string }) => item.text).join(' ');
 
-        const response = await fetch(productionURL, {
-          method: 'POST',
-          headers: {
+      debugger;
+
+      // console.log('Full Text:', fullText);
+      const devUrl = `${process.env.NEXT_PUBLIC_DEV_URL}/us-central1/createYoutubeSummary`
+      
+      // Send transcript for summarization
+      const response = await fetch(devUrl, {  
+        method: 'POST',
+        headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({youtubeUrl : data.url}),
-        });
+        body: JSON.stringify({
+          youtubeUrl: data.url,
+          transcript: fullText,
+          language: data.language
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-        const result = await response.json();
-        return result;
+      const result = await response.json();
+      return result;
     } catch (error) {
       console.error('Error creating summary:', error);
       throw error;
     }
+  };
+
+  // Helper function to extract video ID from YouTube URL
+  const extractYoutubeVideoId = (url: string): string | null => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
   };
